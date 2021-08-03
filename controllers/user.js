@@ -3,23 +3,28 @@ const User = require("../models/user");
 const getAllUsers = (req, res) =>
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: `Ошибка: ресурс не найден.` })
-    );
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Ошибка в запросе.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+  });
+  
 
 
 const getUser = (req, res) =>
   User.findById(req.params.id)
     .then((user) => res.status(200).send(user))
-    .catch(() =>
-      res
-        .status(500)
-        .send({
-          message: `Ошибка: пользователь не найден.`,
-        })
-    );
+    .catch((err) => {
+      if (err.name === 'CastError') {
+       res.status(400).send({ message: 'Ошибка в запросе.' });
+     } else if (err.name === 'Error') {
+       res.status(404).send({ message: 'Карточка не найдена.' });
+     } else {
+       res.status(500).send({ message: 'Ошибка на сервере.' });
+     }
+   });
 
 
 const createUser = (req, res) => {
@@ -28,13 +33,16 @@ const createUser = (req, res) => {
   return (
     User.create({ name, about, avatar })
       .then((user) => res.status(200).send(user))
-      .catch(() =>
-        res
-          .status(500)
-          .send({ message: `Ошибка: пользователь не создан.` })
-      )
-  );
-};
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
+        } else if (err.name === 'Error') {
+          res.status(404).send({ message: 'Карточка не найдена.' });
+        } else {
+          res.status(500).send({ message: 'Ошибка на сервере.' });
+        }
+    })
+  )};
 
 const updateUserInfo = (req, res) => {
   const { name, about } = req.body;
@@ -42,30 +50,34 @@ const updateUserInfo = (req, res) => {
   return User.findByIdAndUpdate(
     req.user._id,
     { name: name, about: about },
-    { new: true }
+    { runValidators: true }
   )
     .then((user) => res.status(200).send(user))
-    .catch(() =>
-      res
-        .status(500)
-        .send({
-          message: `Ошибка: профиль пользоавателя не обновлен.`,
-        })
-    );
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
+      } else if (err.name === 'Error') {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+    });
 };
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  return User.findByIdAndUpdate(req.user._id, { avatar: avatar }, { new: true })
+  return User.findByIdAndUpdate(req.user._id, { avatar: avatar }, { runValidators: true })
     .then((user) => res.status(200).send(user))
-    .catch(() =>
-      res
-        .status(500)
-        .send({
-          message: `Ошибка: аватар пользоавателя не обновлен.`,
-        })
-    );
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
+      } else if (err.name === 'Error') {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+    });
 };
 
 

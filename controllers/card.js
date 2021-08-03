@@ -17,11 +17,13 @@ const addCard = (req, res) => {
 
   return Card.create({ name, link, owner })
     .then((card) => res.status(200).send(card))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: `Ошибка: карточка не создана.` })
-    );
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+    });
 };
 
 
@@ -30,11 +32,15 @@ const deleteCard = (req, res) => {
 
   return Card.findByIdAndRemove(cardId)
     .then((card) => res.status(200).send(card))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: `Ошибка: карточка не удалена.` })
-    );
+    .catch((err) => {
+      if (err.name === 'CastError') {
+       res.status(400).send({ message: 'Ошибка в запросе.' });
+     } else if (err.name === 'Error') {
+       res.status(404).send({ message: 'Карточка не найдена.' });
+     } else {
+       res.status(500).send({ message: 'Ошибка на сервере.' });
+     }
+   });
 };
 
 const likeCard = (req, res) => {
@@ -46,13 +52,15 @@ const likeCard = (req, res) => {
     { new: true }
   )
     .then((card) => res.status(200).send(card))
-    .catch(() =>
-      res
-        .status(500)
-        .send({
-          message: `Ошибка: лайк не поставлен.`,
-        })
-    );
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Ошибка в запросе.' });
+      } else if (err.name === 'Error') {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+    });
 };
 
 const dislikeCard = (req, res) => {
@@ -64,13 +72,15 @@ const dislikeCard = (req, res) => {
     { new: true }
   )
     .then((card) => res.status(200).send(card))
-    .catch(() =>
-      res
-        .status(500)
-        .send({
-          message: `Ошибка: лайк не стнят.`,
-        })
-    );
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Ошибка в запросе.' });
+      } else if (err.name === 'Error') {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка на сервере.' });
+      }
+    });
 };
 
 
