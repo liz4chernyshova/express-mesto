@@ -10,12 +10,16 @@ const getAllUsers = (req, res) =>
 
 const getUser = (req, res) =>
   User.findById(req.params.id)
-    .then((user) => res.status(200).send(user))
+    .then((users) => {
+      if (!users) {
+        res.status(404).json({ message: 'Пользователь не найден.' });
+      } else {
+        res.status(200).send(users);
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
        res.status(400).send({ message: 'Ошибка в запросе.' });
-     } else if (err.name === 'Error') {
-       res.status(404).send({ message: 'Карточка не найдена.' });
      } else {
        res.status(500).send({ message: 'Ошибка на сервере.' });
      }
@@ -27,12 +31,16 @@ const createUser = (req, res) => {
 
   return (
     User.create({ name, about, avatar })
-      .then((user) => res.status(200).send(user))
+      .then((users) => {
+        if (!users) {
+          res.status(404).json({ message: 'Пользователь не найден.' });
+        } else {
+          res.status(200).send(users);
+        }
+      })
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
-        } else if (err.name === 'Error') {
-          res.status(404).send({ message: 'Карточка не найдена.' });
+          res.status(400).send({ message: 'Переданы некорректные данные.' });
         } else {
           res.status(500).send({ message: 'Ошибка на сервере.' });
         }
@@ -47,12 +55,16 @@ const updateUserInfo = (req, res) => {
     { name: name, about: about },
     { runValidators: true }
   )
-    .then((user) => res.status(200).send(user))
+    .then((users) => {
+      if (!users) {
+        res.status(404).json({ message: 'Пользователь не найден.' });
+      } else {
+        res.status(200).send(users);
+      }
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
-      } else if (err.name === 'Error') {
-        res.status(404).send({ message: 'Карточка не найдена.' });
+        res.status(400).send({ message: 'Переданы некорректные данные.' });
       } else {
         res.status(500).send({ message: 'Ошибка на сервере.' });
       }
@@ -63,12 +75,16 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
   return User.findByIdAndUpdate(req.user._id, { avatar: avatar }, { runValidators: true })
-    .then((user) => res.status(200).send(user))
+    .then((users) => {
+      if (!users) {
+        res.status(404).json({ message: 'Пользователь не найден.' });
+      } else {
+        res.status(200).send(users);
+      }
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
-      } else if (err.name === 'Error') {
-        res.status(404).send({ message: 'Карточка не найдена.' });
+        res.status(400).send({ message: 'Переданы некорректные данные.' });
       } else {
         res.status(500).send({ message: 'Ошибка на сервере.' });
       }
