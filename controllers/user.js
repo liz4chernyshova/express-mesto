@@ -3,13 +3,8 @@ const User = require("../models/user");
 const getAllUsers = (req, res) =>
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Ошибка в запросе.' });
-      } else {
-        res.status(500).send({ message: 'Ошибка на сервере.' });
-      }
-  });
+    .catch(() => res.status(500).send({ message: 'Ошибка на сервере' })
+  );
   
 
 

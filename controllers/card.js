@@ -31,13 +31,17 @@ const deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   return Card.findByIdAndRemove(cardId)
-    .then((card) => res.status(200).send(card))
+    .then((cards) => {
+      if (!cards) {
+        res.status(404).json({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(200).send(cards);
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
        res.status(400).send({ message: 'Ошибка в запросе.' });
-     } else if (err.name === 'Error') {
-       res.status(404).send({ message: 'Карточка не найдена.' });
-     } else {
+      } else {
        res.status(500).send({ message: 'Ошибка на сервере.' });
      }
    });
@@ -51,13 +55,17 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .then((card) => res.status(200).send(card))
+    .then((cards) => {
+      if (!cards) {
+        res.status(404).json({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(200).send(cards);
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Ошибка в запросе.' });
-      } else if (err.name === 'Error') {
-        res.status(404).send({ message: 'Карточка не найдена.' });
-      } else {
+      }  else {
         res.status(500).send({ message: 'Ошибка на сервере.' });
       }
     });
@@ -71,12 +79,16 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .then((card) => res.status(200).send(card))
+    .then((cards) => {
+      if (!cards) {
+        res.status(404).json({ message: 'Карточка не найдена.' });
+      } else {
+        res.status(200).send(cards);
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Ошибка в запросе.' });
-      } else if (err.name === 'Error') {
-        res.status(404).send({ message: 'Карточка не найдена.' });
       } else {
         res.status(500).send({ message: 'Ошибка на сервере.' });
       }
