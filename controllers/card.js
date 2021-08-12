@@ -31,7 +31,12 @@ const deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   return Card.findByIdAndRemove(cardId)
+    .orFail(new Error('Error'))
     .then((cards) => {
+      if (req.user._id !== cards.owner.toString()) {
+        res.status(403).send({ message: 'Чужая карточка.' });
+      }
+      cards.remove();
       if (!cards) {
         res.status(404).json({ message: 'Карточка не найдена.' });
       } else {
