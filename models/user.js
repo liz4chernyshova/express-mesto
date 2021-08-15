@@ -1,22 +1,23 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    default: "Жак Ив-Кусто",
+    default: 'Жак Ив-Кусто',
     minlength: 2,
     maxlength: 30,
   },
   about: {
     type: String,
-    default: "Исследователь",
+    default: 'Исследователь',
     minlength: 2,
     maxlength: 30,
   },
   avatar: {
     type: String,
-    default: "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     match: /^https?:\/\/(www.)?[a-zA-Z0-9-.]+\.[a-zA-Z]{2,}/,
   },
   email: {
@@ -54,4 +55,4 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     });
 };
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model('user', userSchema);

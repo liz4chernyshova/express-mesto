@@ -5,8 +5,7 @@ const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/user');
 const error404 = require('./errors/ErrorNotFound');
-const { celebrate, Joi } = require("celebrate");
-
+const { celebrate, Joi } = require('celebrate');
 
 const { PORT = 3000 } = process.env;
 
@@ -16,7 +15,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
   useNewUrlParser: true,
   useCreateIndex: true,
-  useFindAndModify: false
+  useFindAndModify: false,
 });
 
 app.use(express.json());
@@ -27,26 +26,26 @@ app.use(
 );
 app.use(auth);
 
-app.use("/", auth, usersRouter);
-app.use("/", auth, cardsRouter);
+app.use('/', auth, usersRouter);
+app.use('/', auth, cardsRouter);
 
-app.post("/signin", celebrate({
+app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
   }),
 }), login);
-app.post("/signup", celebrate({
+app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-zA-z0-9%$&=?/.-]+)\.([a-zA-z0-9%$&=?/.-]+)([a-zA-z0-9%$&=?/.-]+)?(#)?$/,),
+    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-zA-z0-9%$&=?/.-]+)\.([a-zA-z0-9%$&=?/.-]+)([a-zA-z0-9%$&=?/.-]+)?(#)?$/),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(8).max(35),
   }),
 }), createUser);
 
-app.all("*", (req, res, next) => next(new error404('Ресурс не найден')));
+app.all('*', (req, res, next) => next(new error404('Ресурс не найден')));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
