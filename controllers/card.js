@@ -1,101 +1,96 @@
 const Card = require("../models/card");
+const error400 = require('../errors/ErrorBadRequest');
+const error403 = require('../errors/ErrorForbidden');
+const error404 = require('../errors/ErrorNotFound');
+const error500 = require('../errors/ServerError');
+
 
 
 const getCards = (req, res) =>
   Card.find({})
     .then((cards) => res.status(200).send(cards))
-    .catch(() =>
-      res
-        .status(500)
-        .send({ message: `Ошибка: ресурс не найден.` })
-    );
+    .catch(() => {
+      next(new error500('На сервере произошла ошибка'));
+    });
 
 
-const addCard = (req, res) => {
+const addCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
   return Card.create({ name, link, owner })
-    .then((card) => res.status(200).send(card))
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки.' });
+        next(new error400('Переданы некорректные данные'));
       } else {
-        res.status(500).send({ message: 'Ошибка на сервере.' });
+        next(new error500('Ошибка на сервере'));
+      }
+    });
+};
+
+const deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(() => {
+      throw new error404('Карточка не найдена');
+    })
+    .then((cards) => {
+      if (req.user._id !== card.owner.toString()) {
+        next(new error403('Чужая карточка'));
+      } else {
+        cards.remove();
+        res.status(200).send(cards);
+      }
+    })
+    .catch((err) => {
+      if (err.message === "CastError") {
+        next(new error400('Ошибка в запросе.'));
+      } else if (err.statusCode === 404) {
+        next(new error404('Карточка не найдена'));
+      } else {
+        next(new error500('Ошибка на сервере.'));
       }
     });
 };
 
 
-const deleteCard = (req, res) => {
-  const { cardId } = req.params;
-
-  return Card.findByIdAndRemove(cardId)
-    .orFail(new Error('Error'))
-    .then((cards) => {
-      if (req.user._id !== cards.owner.toString()) {
-        res.status(403).send({ message: 'Чужая карточка.' });
-      }
-      cards.remove();
-      if (!cards) {
-        res.status(404).json({ message: 'Карточка не найдена.' });
-      } else {
-        res.status(200).send(cards);
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-       res.status(400).send({ message: 'Ошибка в запросе.' });
-      } else {
-       res.status(500).send({ message: 'Ошибка на сервере.' });
-     }
-   });
-};
-
-const likeCard = (req, res) => {
-  const { cardId } = req.params;
-
-  return Card.findByIdAndUpdate(
-    cardId,
+const likeCard = (req, res, next) => {
+  Card.findByIdAndUpdate(req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true }
-  )
-    .then((cards) => {
-      if (!cards) {
-        res.status(404).json({ message: 'Карточка не найдена.' });
-      } else {
-        res.status(200).send(cards);
-      }
+    { new: true, runValidators: true }, )
+    .orFail(() => {
+      throw new error404('Карточка не найдена');
     })
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Ошибка в запросе.' });
-      }  else {
-        res.status(500).send({ message: 'Ошибка на сервере.' });
+      if (err.name === "CastError") {
+        next(new error400('Ошибка в запросе.'));
+      } else if (err.statusCode === 404) {
+        next(new error404('Карточка не найдена'));
+      } else {
+        next(new error500('Ошибка на сервере.'));
       }
     });
 };
 
-const dislikeCard = (req, res) => {
+
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
 
-  return Card.findByIdAndUpdate(
-    cardId,
+  Card.findByIdAndUpdate(req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true }
-  )
-    .then((cards) => {
-      if (!cards) {
-        res.status(404).json({ message: 'Карточка не найдена.' });
-      } else {
-        res.status(200).send(cards);
-      }
+    { new: true, runValidators: true },)
+    .orFail(() => {
+      throw new error404('Карточка не найдена');
     })
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Ошибка в запросе.' });
+      if (err.name === "CastError") {
+        next(new error400('Ошибка в запросе.'));
+      } else if (err.statusCode === 404) {
+        next(new error404('Карточка не найдена'));
       } else {
-        res.status(500).send({ message: 'Ошибка на сервере.' });
+        next(new error500('Ошибка на сервере.'));
       }
     });
 };

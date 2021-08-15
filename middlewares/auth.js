@@ -1,21 +1,22 @@
 const jwt = require('jsonwebtoken');
+const error401 = require('../errors/ErrorAuthorization');
+const { JWT_SECRET } = require('../utils/key');
 
-module.exports = (req, res, next) => {
-    const { authorization } = req.headers;
-  
-    if (!authorization || !authorization.startsWith('Bearer ')) {
-      return res.status(401).send({ message: 'Необходима авторизация' });
-    }
-
-    const token = authorization.replace('Bearer ', '');
+const auth = (req, res, next) => {
+  if (!req.cookies.jwt) {
+    next(new error401('Необходима авторизация.'));
+  } else {
+    const token = req.cookies.jwt;
     let payload;
-  
+
     try {
-      payload = jwt.verify(token, 'super-strong-secret');
+      payload = jwt.verify(token, JWT_SECRET);
     } catch (err) {
-      return res.status(401).send({ message: 'Необходима авторизация' });
+      next(new error401 ('Авторизация не прошла.'));
     }
     req.user = payload;
-  
     next();
-  };
+  }
+};
+
+module.exports = auth;

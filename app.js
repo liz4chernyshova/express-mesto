@@ -4,6 +4,9 @@ const usersRouter = require('./routes/user');
 const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/user');
+const error404 = require('./errors/ErrorNotFound');
+const { celebrate, Joi } = require("celebrate");
+
 
 const { PORT = 3000 } = process.env;
 
@@ -24,15 +27,26 @@ app.use(
 );
 app.use(auth);
 
-app.use("/", usersRouter);
-app.use("/", cardsRouter);
+app.use("/", auth, usersRouter);
+app.use("/", auth, cardsRouter);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post("/signin", celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+}), login);
+app.post("/signup", celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-zA-z0-9%$&=?/.-]+)\.([a-zA-z0-9%$&=?/.-]+)([a-zA-z0-9%$&=?/.-]+)?(#)?$/,),
+    email: Joi.string().email().required(),
+    password: Joi.string().required().min(8).max(35),
+  }),
+}), createUser);
 
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден.' });
-});
+app.all("*", (req, res, next) => next(new error404('Ресурс не найден')));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
