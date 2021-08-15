@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/user');
 const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/user');
-const error404 = require('./errors/ErrorNotFound');
-const { celebrate, Joi } = require('celebrate');
+const Error404 = require('./errors/ErrorNotFound');
 
 const { PORT = 3000 } = process.env;
 
@@ -45,8 +45,6 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.all('*', (req, res, next) => next(new error404('Ресурс не найден')));
+app.all('*', (req, res, next) => next(new Error404('Ресурс не найден')));
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
+app.listen(PORT);
