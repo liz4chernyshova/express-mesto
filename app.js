@@ -4,6 +4,7 @@ const { celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/user');
 const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
+const errorHandler = require('./middlewares/errorHandler');
 const { createUser, login } = require('./controllers/user');
 const Error404 = require('./errors/ErrorNotFound');
 
@@ -19,15 +20,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(express.json());
-app.use(
-  express.urlencoded({
-    extended: true,
-  }),
-);
-app.use(auth);
-
-app.use('/', auth, usersRouter);
-app.use('/', auth, cardsRouter);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -45,6 +37,11 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
+app.use('/', auth, usersRouter);
+app.use('/', auth, cardsRouter);
+
 app.all('*', (req, res, next) => next(new Error404('Ресурс не найден')));
+
+app.use(errorHandler);
 
 app.listen(PORT);
