@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { celebrate, Joi } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/user');
 const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
@@ -31,9 +31,9 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^(https?:\/\/)?([a-zA-z0-9%$&=?/.-]+)\.([a-zA-z0-9%$&=?/.-]+)([a-zA-z0-9%$&=?/.-]+)?(#)?$/),
+    avatar: Joi.string().pattern(/^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/),
     email: Joi.string().email().required(),
-    password: Joi.string().required().min(8).max(35),
+    password: Joi.string().required().min(8),
   }),
 }), createUser);
 
@@ -41,6 +41,8 @@ app.use('/', auth, usersRouter);
 app.use('/', auth, cardsRouter);
 
 app.all('*', (req, res, next) => next(new Error404('Ресурс не найден')));
+
+app.use(errors());
 
 app.use(errorHandler);
 
