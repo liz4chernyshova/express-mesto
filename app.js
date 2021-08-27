@@ -22,8 +22,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(
   cors({
     origin: [
-      'https://mesto.mesto.students.nomoredomains.monster',
-      'http://mesto.mesto.students.nomoredomains.monster',
+      'https://api.chernyshova.backend.nomoredomains.rocks',
+      'http://api.chernyshova.backend.nomoredomains.rocks',
       'http://localhost:3000',
     ],
     credentials: true,
