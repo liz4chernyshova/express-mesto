@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { errors, celebrate, Joi } = require('celebrate');
+const cors = require('cors');
 const usersRouter = require('./routes/user');
 const cardsRouter = require('./routes/card');
 const auth = require('./middlewares/auth');
@@ -8,7 +9,6 @@ const errorHandler = require('./middlewares/errorHandler');
 const { createUser, login } = require('./controllers/user');
 const Error404 = require('./errors/ErrorNotFound');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-require('dotenv').config();
 
 const app = express();
 
@@ -18,6 +18,17 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+app.use(
+  cors({
+    origin: [
+      'https://mesto.mesto.students.nomoredomains.monster',
+      'http://mesto.mesto.students.nomoredomains.monster',
+      'http://localhost:3000',
+    ],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
