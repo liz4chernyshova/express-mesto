@@ -7,8 +7,8 @@ const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
 const { createUser, login } = require('./controllers/user');
 const Error404 = require('./errors/ErrorNotFound');
-
-const { PORT = 3000 } = process.env;
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+require('dotenv').config();
 
 const app = express();
 
@@ -20,6 +20,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(express.json());
+
+app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -37,8 +45,11 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use('/', auth, usersRouter);
-app.use('/', auth, cardsRouter);
+app.use(auth);
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
+
+app.use(errorLogger);
 
 app.all('*', (req, res, next) => next(new Error404('Ресурс не найден')));
 
@@ -46,4 +57,4 @@ app.use(errors());
 
 app.use(errorHandler);
 
-app.listen(PORT);
+module.exports = app;
